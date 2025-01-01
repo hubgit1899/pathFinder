@@ -10,26 +10,18 @@
 #include "Headers/Astar.hpp"
 #include "Headers/BFS.hpp"
 #include "Headers/Dijkstra.hpp"
+#include "Headers/TextBoxWindow.h"
 #include <nlohmann/json.hpp>
 
 #include <iostream>
 #include <fstream>
 #include <string>
 
-// Hey, you wanna play a game?
-// I'm gonna think of a number between 1 and 20 and you need to guess what it is.
-// Ready?
-// Go!
-//...
-//...
-// Well?
-// No answer?
-// That's okay. If you're wondering, I was thinking of 5.28648567285.
-
 int main()
 {
 	bool save = false;
 	bool load = false;
+
 	//----------------< Breadth-first search start >----------------
 	bool bfs_finished = 0;
 
@@ -47,6 +39,7 @@ int main()
 	gbl::Map<float> bfs_distances = {};
 
 	int algo = 0;
+	int option = 0;
 	//----------------< Breadth-first search end >----------------
 
 	//----------------< Dijkstra's algorithm start >----------------
@@ -101,10 +94,10 @@ int main()
 	sf::Sprite map_sprite;
 
 	sf::Texture font_texture;
-	font_texture.loadFromFile("/Users/junaidalam/Desktop/Study/Semester 3/DSA/DSA Project/Pathfinding-Main/Source/Resources/Images/Font.png");
+	font_texture.loadFromFile("Resources/Images/Font.png");
 
 	sf::Texture map_texture;
-	map_texture.loadFromFile("/Users/junaidalam/Desktop/Study/Semester 3/DSA/DSA Project/Pathfinding-Main/Source/Resources/Images/Map.png");
+	map_texture.loadFromFile("Resources/Images/Map.png");
 
 	gbl::Map<> map = {};
 
@@ -132,7 +125,6 @@ int main()
 		std::chrono::microseconds delta_time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - previous_time);
 
 		lag += delta_time;
-
 		previous_time += delta_time;
 
 		while (gbl::SCREEN::FRAME_DURATION <= lag)
@@ -157,7 +149,21 @@ int main()
 					{
 					case sf::Keyboard::Enter: // Pause/Resume the search
 					{
-						pause_search = 1 - pause_search;
+						if (option != 3 && option != 4)
+						{
+							pause_search = 1 - pause_search;
+						}
+						else
+						{
+							if (option == 3)
+							{
+								save = true;
+							}
+							else if (option == 4)
+							{
+								load = true;
+							}
+						}
 
 						break;
 					}
@@ -182,40 +188,44 @@ int main()
 					}
 					case sf::Keyboard::Down:
 					{
-						algo++;
-						if (algo > 2)
+						option++;
+						if (option > 4)
 						{
-							algo = 0;
+							option = 0;
+						}
+
+						if (option >= 0 && option <= 2)
+						{ // Check if option is between 0 and 2 (inclusive)
+							algo = option;
 						}
 
 						map_updated = 1;
-						break; // Add this to prevent fall-through
+						break; // Prevent fall-through
 					}
+
 					case sf::Keyboard::Up:
 					{
-						algo--;
-						if (algo < 0)
+						option--;
+						if (option < 0)
 						{
-							algo = 2;
+							option = 4;
 						}
+
+						if (option >= 0 && option <= 2)
+						{
+							algo = option;
+						}
+
 						map_updated = 1;
-						break; // Add this to prevent fall-through
+						break; // Prevent fall-through
 					}
 
-					case sf::Keyboard::S:
-					{
-						save = true;
-						break;
-					}
-					case sf::Keyboard::L:
-					{
-						load = true;
-						break;
-					}
 					default:
 						break;
 					}
 				}
+				default:
+					break;
 				}
 			}
 
@@ -263,11 +273,11 @@ int main()
 						{
 							if (1 == sf::Mouse::isButtonPressed(sf::Mouse::Left))
 							{
-								if (gbl::MAP::Cell::Wall != map[cell.first][cell.second].value)
+								if (gbl::MAP::Cell::Wall != map[cell.first][cell.second].value && map[cell.first][cell.second].name == "")
 								{
 									map_updated = 1;
 
-									if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+									if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 									{
 										map[cell.first][cell.second] = gbl::MAP::Cell::Empty;
 
@@ -278,6 +288,15 @@ int main()
 										map[cell.first][cell.second] = gbl::MAP::Cell::Empty;
 
 										start_position = cell;
+									}
+									else if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::N))
+									{
+
+										std::string userInput = map[cell.first][cell.second].name;
+										TextBoxWindow textBox;
+										std::string prompt = "Enter Cell Name:";
+										textBox.run(userInput, prompt);
+										map[cell.first][cell.second].name = userInput;
 									}
 									else
 									{
@@ -355,155 +374,175 @@ int main()
 			{
 				window.clear();
 
-				draw_text(0, 0, 500, 662, "Start: " + std::to_string(start_position.first) + "," + std::to_string(start_position.second) + "\nEnd: " + std::to_string(finish_position.first) + "," + std::to_string(finish_position.second), window, font_texture);
+				auto cell = get_mouse_cell(window);
+				if (cell.first < 0 || cell.first >= gbl::MAP::COLUMNS || cell.second < 0 || cell.second >= gbl::MAP::ROWS)
+				{
+					draw_text(0, 0, 650, 662, "Mouse is outside\nthe map bounds.", window, font_texture);
+				}
+				else
+				{
+					draw_text(0, 0, 650, 662, "Start: " + std::to_string(start_position.first) + "," + std::to_string(start_position.second) + "\nEnd: " + std::to_string(finish_position.first) + "," + std::to_string(finish_position.second) + "\nCurrent: " + std::to_string(cell.first) + "," + std::to_string(cell.second) + "\nName: " + map[cell.first][cell.second].name,
+							  window, font_texture);
+				}
 
 				if (algo == 0)
 				{
 					draw_map(0, 0, finish_position, start_position, window, map_sprite, bfs_map, 1, bfs_distances);
 
-					draw_text(0, 0, 10, 662, "\n->\n\n", window, font_texture);
+					if (option == 0)
+					{
+						draw_text(0, 0, 10, 662, "\n->\n\n", window, font_texture);
+					}
 
-					draw_stats(gbl::SCREEN::WIDTH - 150, 728, bfs_path_length, bfs_total_checks, bfs_duration, "BFS", window, font_texture);
+					draw_stats(gbl::SCREEN::WIDTH - 125, 724, bfs_path_length, bfs_total_checks, bfs_duration, "BFS", window, font_texture);
 				}
 				else if (algo == 1)
 				{
 					draw_map(0, 0, finish_position, start_position, window, map_sprite, dijkstra_map, 1, dijkstra_distances);
 
-					draw_text(0, 0, 10, 662, "\n\n->\n", window, font_texture);
+					if (option == 1)
+					{
+						draw_text(0, 0, 10, 662, "\n\n->\n", window, font_texture);
+					}
 
-					draw_stats(gbl::SCREEN::WIDTH - 150, 728, dijkstra_path_length, dijkstra_total_checks, dijkstra_duration, "Dijkstra", window, font_texture);
+					draw_stats(gbl::SCREEN::WIDTH - 125, 724, dijkstra_path_length, dijkstra_total_checks, dijkstra_duration, "Dijkstra", window, font_texture);
 				}
 				else if (algo == 2)
 				{
 					draw_map(0, 0, finish_position, start_position, window, map_sprite, astar_map, 1, astar_g_scores);
 
-					draw_text(0, 0, 10, 662, "\n\n\n->", window, font_texture);
+					if (option == 2)
+					{
+						draw_text(0, 0, 10, 662, "\n\n\n->", window, font_texture);
+					}
 
-					draw_stats(gbl::SCREEN::WIDTH - 150, 728, astar_path_length, astar_total_checks, astar_duration, "A star", window, font_texture);
+					draw_stats(gbl::SCREEN::WIDTH - 125, 724, astar_path_length, astar_total_checks, astar_duration, "A star", window, font_texture);
 				}
 
-				draw_text(0, 0, 50, 664, "Choose Algorithm:\n1. BFS\n2. Dijkstra\n3. A*", window, font_texture);
-
-				if (save)
+				if (option == 3)
 				{
-					nlohmann::json json_map; // JSON object to store the map
-					int cells = 0;
+					draw_text(0, 0, 310, 662, "\n->\n", window, font_texture);
 
-					// Convert the map to JSON
-					for (size_t row = 0; row < gbl::MAP::ROWS; ++row)
-{
-    for (size_t col = 0; col < gbl::MAP::COLUMNS; ++col)
-    {
-        const auto &cell = map[row][col];
-        nlohmann::json cell_data;
-
-        // Add structured position fields
-        cell_data["row"] = row;
-        cell_data["col"] = col;
-
-        // Optionally add a human-readable string representation of the position
-        cell_data["position"] = "(" + std::to_string(row) + ", " + std::to_string(col) + ")";
-
-        cell_data["value"] = static_cast<int>(cell.value);
-        cell_data["name"] = cell.name;
-
-        json_map["map"].push_back(cell_data);
-        cells++;
-    }
-}
-
-					std::cout << "Total cells saved: " << cells << std::endl;
-
-					// Prompt user for a filename
-					std::string filename;
-					std::cout << "Enter the file name to save the map (e.g., my_map.json): ";
-					std::getline(std::cin, filename);
-
-					// Ensure the filename is not empty
-					if (filename.empty())
+					if (save)
 					{
-						std::cerr << "Error: Invalid filename" << std::endl;
-						return 1;
-					}
+						nlohmann::json json_map; // JSON object to store the map
 
-					// Save JSON to file
-					std::ofstream file(filename);
-					if (file.is_open())
-					{
-						file << json_map.dump(4); // Save with 4 spaces indentation for readability
-						file.close();
-						std::cout << "Map saved successfully to " << filename << std::endl;
-					}
-					else
-					{
-						std::cerr << "Error: Could not save the file to " << filename << std::endl;
-					}
-
-					save = false;
-				}
-
-				if (load)
-				{
-					nlohmann::json json_map; // JSON object to load the map
-
-					// Prompt user for a filename
-					std::string filename;
-					std::cout << "Enter the file name to load the map (e.g., my_map.json): ";
-					std::getline(std::cin, filename);
-
-					// Open the file
-					std::ifstream file(filename);
-					if (file.is_open())
-					{
-						try
+						// Convert the map to JSON
+						for (size_t row = 0; row < gbl::MAP::ROWS; ++row)
 						{
-							// Parse the JSON file
-							file >> json_map;
-
-							// Clear the current map
-							map = {};
-							int cells = 0;
-
-							// Load the JSON data into the map
-							for (size_t row = 0; row < gbl::MAP::ROWS; ++row)
+							for (size_t col = 0; col < gbl::MAP::COLUMNS; ++col)
 							{
-								for (size_t col = 0; col < gbl::MAP::COLUMNS; ++col)
+								const auto &cell = map[col][row];
+								nlohmann::json cell_data;
+
+								// Store structured position fields
+								cell_data["row"] = row;
+								cell_data["col"] = col;
+
+								// Optionally add a human-readable string representation of the position
+								cell_data["position"] = "(" + std::to_string(row) + ", " + std::to_string(col) + ")";
+
+								cell_data["value"] = static_cast<int>(cell.value);
+								cell_data["name"] = cell.name;
+
+								// Add the cell data to the map
+								json_map["map"].push_back(cell_data);
+							}
+						}
+
+						std::string filename;
+						TextBoxWindow textBox;
+						std::string prompt = "Enter name to save the map:";
+						textBox.run(filename, prompt);
+
+						// Ensure the filename is valid
+						if (filename.empty())
+						{
+							std::cerr << "Error: Invalid filename" << std::endl;
+							return 0;
+						}
+
+						// Save JSON to file
+						std::ofstream file(filename);
+						if (file.is_open())
+						{
+							file << json_map.dump(4); // Save with 4 spaces indentation for readability
+							file.close();
+							std::cout << "Map saved successfully to " << filename << std::endl;
+						}
+						else
+						{
+							std::cerr << "Error: Could not save the file to " << filename << std::endl;
+						}
+
+						save = false;
+					}
+				}
+				if (option == 4)
+				{
+					draw_text(0, 0, 310, 662, "\n\n->", window, font_texture);
+
+					if (load)
+					{
+						nlohmann::json json_map; // JSON object to load the map
+
+						// Prompt user for a filename
+						std::string filename;
+						TextBoxWindow textBox;
+						std::string prompt = "Enter name to load the map:";
+						textBox.run(filename, prompt);
+
+						// Open the file
+						std::ifstream file(filename);
+						if (file.is_open())
+						{
+							try
+							{
+								// Parse the JSON file
+								file >> json_map;
+
+								// Clear the current map
+								map = {};
+
+								// Check if the "map" key exists
+								if (json_map.contains("map"))
 								{
-									if (json_map.contains("map") &&
-										row < json_map["map"].size() &&
-										col < json_map["map"][row].size())
+									for (const auto &cell_data : json_map["map"])
 									{
-										const auto &cell_data = json_map["map"][row][col];
-										map[row][col].value = static_cast<gbl::MAP::Cell>(cell_data["value"].get<int>());
-										map[row][col].name = cell_data["name"].get<std::string>();
+										size_t row = cell_data["row"].get<size_t>();
+										size_t col = cell_data["col"].get<size_t>();
+
+										if (row < gbl::MAP::ROWS && col < gbl::MAP::COLUMNS)
+										{
+											map[col][row].value = static_cast<gbl::MAP::Cell>(cell_data["value"].get<int>());
+											map[col][row].name = cell_data["name"].get<std::string>();
+										}
 									}
-									else
-									{
-										// Assign default values for missing cells
-										map[row][col].value = gbl::MAP::Cell::Empty;
-										map[row][col].name = "";
-									}
-									cells++;
+									std::cout << "Map loaded successfully from " << filename << std::endl;
+								}
+								else
+								{
+									std::cerr << "Error: 'map' key not found in the JSON file." << std::endl;
 								}
 							}
+							catch (const std::exception &e)
+							{
+								std::cerr << "Error: Failed to parse the JSON file. " << e.what() << std::endl;
+							}
 
-							std::cout << "total cells load: " << cells << std::endl;
-							std::cout << "Map loaded successfully from " << filename << std::endl;
+							file.close();
 						}
-						catch (const std::exception &e)
+						else
 						{
-							std::cerr << "Error: Failed to parse the JSON file. " << e.what() << std::endl;
+							std::cerr << "Error: Could not open the file " << filename << std::endl;
 						}
 
-						file.close();
+						load = false;
 					}
-					else
-					{
-						std::cerr << "Error: Could not open the file " << filename << std::endl;
-					}
-
-					load = false;
 				}
+
+				draw_text(0, 0, 50, 664, "Choose Algorithm\n1. BFS\n2. Dijkstra\n3. A*", window, font_texture);
+				draw_text(0, 0, 350, 664, "Choose Option\n1. Save Map\n2. Load Map", window, font_texture);
 
 				window.display();
 			}

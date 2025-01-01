@@ -1,3 +1,0 @@
-/Users/junaidalam/Desktop/Study/Semester 3/DSA/DSA Project/Pathfinding-Main/build/_deps/sfml-subbuild/CMakeFiles/sfml-populate.dir
-/Users/junaidalam/Desktop/Study/Semester 3/DSA/DSA Project/Pathfinding-Main/build/_deps/sfml-subbuild/CMakeFiles/edit_cache.dir
-/Users/junaidalam/Desktop/Study/Semester 3/DSA/DSA Project/Pathfinding-Main/build/_deps/sfml-subbuild/CMakeFiles/rebuild_cache.dir

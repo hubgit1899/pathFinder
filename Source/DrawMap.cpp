@@ -31,50 +31,58 @@ void draw_map(const unsigned short i_x, const unsigned short i_y, const gbl::Pos
 
 			if (a == i_finish_position.first && b == i_finish_position.second)
 			{
-				i_map_sprite.setColor(sf::Color(219, 0, 0));
+				sf::IntRect texture_rect(2 * gbl::MAP::CELL_SIZE, 0, gbl::MAP::CELL_SIZE, gbl::MAP::CELL_SIZE);
+				i_map_sprite.setTextureRect(texture_rect);
 			}
 			else if (a == i_start_position.first && b == i_start_position.second)
 			{
-				i_map_sprite.setColor(sf::Color(0, 219, 0));
+				sf::IntRect texture_rect(3 * gbl::MAP::CELL_SIZE, 0, gbl::MAP::CELL_SIZE, gbl::MAP::CELL_SIZE);
+				i_map_sprite.setTextureRect(texture_rect);
 			}
 			else
 			{
-				gbl::MAP::Cell cell_type = i_map[a][b].value;
 
-				switch (cell_type)
+				if (!i_map[a][b].name.empty()) // Check if cell name is not empty
 				{
-				case gbl::MAP::Cell::Empty:
-				{
-					i_map_sprite.setColor(sf::Color(36, 36, 85));
-
-					break;
+					// Set the texture rect for cells with names (bright yellow indicator)
+					sf::IntRect texture_rect(4 * gbl::MAP::CELL_SIZE, 0, gbl::MAP::CELL_SIZE, gbl::MAP::CELL_SIZE);
+					i_map_sprite.setTextureRect(texture_rect);
 				}
-				case gbl::MAP::Cell::Path:
+				else
 				{
-					i_map_sprite.setColor(sf::Color(255, 219, 85));
+					// Reset the texture rect to the default for other cells
+					i_map_sprite.setTextureRect(sf::IntRect(0, 0, gbl::MAP::CELL_SIZE, gbl::MAP::CELL_SIZE));
 
-					break;
-				}
-				case gbl::MAP::Cell::Visited:
-				{
-					if (0 != i_change_colors)
+					gbl::MAP::Cell cell_type = i_map[a][b].value;
+					switch (cell_type)
 					{
-						// The gradient will go from (0, 146, 255) to (0, 0, 255) then (0, 0, 85).
-						unsigned short color_value = 316 - round(316 * i_distances[a][b] / max_distance);
+					case gbl::MAP::Cell::Empty:
+						i_map_sprite.setColor(sf::Color(255, 255, 255)); // White for empty cells
+						break;
 
-						i_map_sprite.setColor(sf::Color(0, std::max(0, color_value - 170), std::min(255, 85 + color_value)));
-					}
-					else
-					{
-						i_map_sprite.setColor(sf::Color(0, 36, 255));
-					}
+					case gbl::MAP::Cell::Path:
+						i_map_sprite.setColor(sf::Color(255, 255, 50)); // Bright yellow for paths
+						break;
 
-					break;
-				}
-				case gbl::MAP::Cell::Wall:
-				{
-					i_map_sprite.setColor(sf::Color(255, 255, 255));
-				}
+					case gbl::MAP::Cell::Visited:
+						if (0 != i_change_colors)
+						{
+							unsigned short color_value = round(255 * i_distances[a][b] / max_distance);
+							unsigned short red = std::max(120, 230 - color_value / 3);
+							unsigned short green = std::max(120, 230 - color_value / 3);
+							unsigned short blue = std::max(180, 255 - color_value / 4);
+							i_map_sprite.setColor(sf::Color(red, green, blue));
+						}
+						else
+						{
+							i_map_sprite.setColor(sf::Color(230, 230, 255)); // Default fallback color
+						}
+						break;
+
+					case gbl::MAP::Cell::Wall:
+						i_map_sprite.setColor(sf::Color(86, 86, 135)); // Wall color
+						break;
+					}
 				}
 			}
 

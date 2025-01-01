@@ -6,7 +6,7 @@ namespace gbl
 	namespace PATHFINDING
 	{
 		// If you don't want to see the process of the search, set this constant to USHRT_MAX.
-		constexpr unsigned short CHECKS_PER_FRAME = USHRT_MAX;
+		constexpr unsigned short CHECKS_PER_FRAME = 24;
 	}
 
 	namespace MAP
