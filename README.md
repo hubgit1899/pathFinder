@@ -49,6 +49,7 @@ This project implements **Breadth-First Search (BFS)**, **Dijkstra's Algorithm**
 - **Save/Load Functionality:** Save maps as JSON files. Filenames with or without extensions are supported.
 - **Algorithm Selection:** Switch between BFS, Dijkstra's, and A\* using the arrow keys.
 - **Customization:** Modify visualization speed by editing the `CHECKS_PER_FRAME` variable in `Global.hpp`. Setting it to `USHRT_MAX` ensures instant visualization.
+- **Map** If you have a map file (one provided i.e map copy.json), place it in the bin folder, you can say that the bin folder is the root folder for the exe file.
 
 ## Dependencies
 
