@@ -61,7 +61,7 @@ void draw_map(const unsigned short i_x, const unsigned short i_y, const gbl::Pos
 						break;
 
 					case gbl::MAP::Cell::Path:
-						i_map_sprite.setColor(sf::Color(255, 255, 50)); // Bright yellow for paths
+						i_map_sprite.setColor(sf::Color(255, 255, 50)); // Path color
 						break;
 
 					case gbl::MAP::Cell::Visited:

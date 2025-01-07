@@ -273,20 +273,16 @@ int main()
 						{
 							if (1 == sf::Mouse::isButtonPressed(sf::Mouse::Left))
 							{
-								if (gbl::MAP::Cell::Wall != map[cell.first][cell.second].value && map[cell.first][cell.second].name == "")
+								if (gbl::MAP::Cell::Wall != map[cell.first][cell.second].value)
 								{
 									map_updated = 1;
 
 									if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 									{
-										map[cell.first][cell.second] = gbl::MAP::Cell::Empty;
-
 										finish_position = cell;
 									}
 									else if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 									{
-										map[cell.first][cell.second] = gbl::MAP::Cell::Empty;
-
 										start_position = cell;
 									}
 									else if (1 == sf::Keyboard::isKeyPressed(sf::Keyboard::N))
@@ -298,7 +294,7 @@ int main()
 										textBox.run(userInput, prompt);
 										map[cell.first][cell.second].name = userInput;
 									}
-									else
+									else if (map[cell.first][cell.second].name == "")
 									{
 										map[cell.first][cell.second] = gbl::MAP::Cell::Wall;
 									}
